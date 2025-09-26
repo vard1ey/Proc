@@ -78,9 +78,9 @@ public class Solution {
         }
     }
 
-    public void startProc(Scanner scanner) {
+    public void startProc(Scanner scan) {
         System.out.print("Введите команду для запуска: ");
-        String command = scanner.nextLine().trim();
+        String command = scan.nextLine().trim();
 
         if (command.isEmpty()) {
             System.out.println("Пустая команда");
