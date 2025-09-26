@@ -1,0 +1,41 @@
+//Написать программу, запускающую экземпляр процесса, получающую информацию о этом процессе, завершающую процесс,
+// для 3х произвольных процессов( Блокнот, калькулятор и т.п.)
+// на 5 имя процесса должно вводится с экрана, а завершение процесса по запросу с экрана "Завершить д/н"
+
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+        Solution solution = new Solution();
+
+        System.out.println("=== Менеджер процессов ===");
+
+        while (true) {
+            System.out.println("\nВыберите действие:");
+            System.out.println("1 - Показать все процессы");
+            System.out.println("2 - Найти и завершить процесс");
+            System.out.println("3 - Запустить новый процесс");
+            System.out.println("4 - Выйти");
+            System.out.print("Ваш выбор: ");
+
+            String a = scan.nextLine();
+
+            switch (a) {
+                case "1":
+                    solution.showProc();
+                    break;
+                case "2":
+                    solution.KillProc(scan);
+                    break;
+                case "3":
+                    solution.startProc(scan);
+                    break;
+                case "4":
+                    return;
+                default:
+                    System.out.println("Такого пункта нет!");
+            }
+        }
+    }
+}
