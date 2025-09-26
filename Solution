@@ -1,0 +1,129 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+public class Solution {
+    private List<ProcessInfo> launchedProcesses = new ArrayList<>();
+
+    public void showProc() {
+        try {
+            System.out.println("Список всех процессов:");
+            for (ProcessInfo info : launchedProcesses) {
+                System.out.println("ID: " + info.pid + ", Имя: " + info.name);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Ошибка: " + e.getMessage());
+        }
+    }
+
+    public void KillProc(Scanner scan) {
+        System.out.print("Введите имя процесса(с .exe): ");
+        String name_proc = scan.nextLine().trim();
+
+        if (name_proc.isEmpty()) {
+            System.out.println("Имя процесса не может быть пустым");
+            return;
+        }
+
+        try {
+            System.out.println("Поиск процессов '" + name_proc + "':");
+            Process searchProcess = Runtime.getRuntime().exec("tasklist /fi \"imagename eq " + name_proc + "\"");
+
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(searchProcess.getInputStream()));
+
+            String line;
+            boolean found = false;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+                if (line.contains(name_proc)) {
+                    found = true;
+                }
+            }
+
+            if (!found) {
+                System.out.println("Процессы с именем '" + name_proc + "' не найдены.");
+                return;
+            }
+
+        } catch (Exception e) {
+            System.out.println("Ошибка поиска: " + e.getMessage());
+            return;
+        }
+
+        System.out.print("Завершить все процессы '" + name_proc + "'? (да/нет): ");
+        String answer = scan.nextLine().trim();
+
+        if (answer.equalsIgnoreCase("да")) {
+            try {
+                Process killProcess = Runtime.getRuntime().exec("taskkill /f /im " + name_proc);
+                int result = killProcess.waitFor();
+
+                if (result == 0) {
+                    System.out.println("Процессы '" + name_proc + "' успешно завершены!");
+                    // Удаляем завершенные процессы из списка отслеживаемых
+                    removeKilledProcesses(name_proc);
+                } else {
+                    System.out.println("Не удалось завершить процессы");
+                }
+
+            } catch (Exception e) {
+                System.out.println("Ошибка завершения: " + e.getMessage());
+            }
+        } else {
+            System.out.println("Отменено.");
+        }
+    }
+
+    public void startProc(Scanner scanner) {
+        System.out.print("Введите команду для запуска: ");
+        String command = scanner.nextLine().trim();
+
+        if (command.isEmpty()) {
+            System.out.println("Пустая команда");
+            return;
+        }
+
+        try {
+            Process process = Runtime.getRuntime().exec(command);
+            long pid = process.pid();
+            String processName = getProcessNameFromCommand(command);
+
+            if (pid != -1) {
+                ProcessInfo info = new ProcessInfo(pid, processName);
+                launchedProcesses.add(info);
+                System.out.println("Процесс '" + processName + "' запущен с PID: " + pid);
+            } else {
+                System.out.println("Процесс запущен, но не удалось получить PID");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Ошибка запуска: " + e.getMessage());
+        }
+    }
+
+    private void removeKilledProcesses(String processName) {
+        launchedProcesses.removeIf(info -> info.name.equalsIgnoreCase(processName));
+    }
+
+    private String getProcessNameFromCommand(String command) {
+        if (command.contains(".exe")) {
+            return command;
+        } else {
+            return command + ".exe";
+        }
+    }
+
+    private static class ProcessInfo {
+        long pid;
+        String name;
+
+        ProcessInfo(long pid, String name) {
+            this.pid = pid;
+            this.name = name;
+        }
+    }
+}
